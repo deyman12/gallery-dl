@@ -6,7 +6,7 @@
 
 """Extractors for https://bato.to/"""
 
-from .common import Extractor, ChapterExtractor, MangaExtractor
+from .common import Extractor, ChapterExtractor, MangaExtractor, logging
 from .. import text, exception
 import re
 
@@ -57,8 +57,8 @@ class BatotoBase():
 
     def _init_root(self, match):
         domain = match.group(1)
-        if domain not in LEGACY_DOMAINS:
-            self.root = "https://" + domain
+        # if domain not in LEGACY_DOMAINS:
+        self.root = "https://" + domain
 
     def request(self, url, **kwargs):
         kwargs["encoding"] = "utf-8"
@@ -74,6 +74,11 @@ class BatotoChapterExtractor(BatotoBase, ChapterExtractor):
     def __init__(self, match):
         self._init_root(match)
         self.chapter_id = match.group(2)
+        
+        self.domain = match.group(1)
+        if self.domain in LEGACY_DOMAINS:
+            Extractor.log.warning(f"Legacy domain (Deprecated/Not Recomennded) '{self.domain}' detected")
+            
         url = "{}/title/0/{}".format(self.root, self.chapter_id)
         ChapterExtractor.__init__(self, match, url)
 
